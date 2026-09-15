@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TOONHUB</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Fonts from your prompt -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind via CDN (no build step needed) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Lucide icons via CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+      :root {
+        --grain-data-uri: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='no'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+      }
+
+      body {
+        margin: 0;
+        font-family: 'Inter', sans-serif;
+        background: #000;
+      }
+
+      .toonhub-root {
+        position: relative;
+        width: 100%;
+        height: 100vh;
+        overflow: hidden;
+        transition: background-color 650ms cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .grain-overlay {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 50;
+        background-image: var(--grain-data-uri);
+        background-size: 200px 200px;
+        opacity: 0.4;
+      }
+
+      .ghost-text {
+        position: absolute;
+        inset-inline: 0;
+        top: 18%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        user-select: none;
+        z-index: 2;
+        font-family: 'Anton', sans-serif;
+        font-size: clamp(90px, 28vw, 380px);
+        font-weight: 900;
+        color: white;
+        opacity: 1;
+        line-height: 1;
+        text-transform: uppercase;
+        letter-spacing: -0.02em;
+        white-space: nowrap;
+      }
+
+      .brand-label {
+        position: absolute;
+        top: 1.5rem;
+        left: 1rem;
+        z-index: 60;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.9);
+        letter-spacing: 0.18em;
+      }
+
+      @media (min-width: 640px) {
+        .brand-label {
+          left: 2rem;
+        }
+      }
+
+      .carousel-root {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+      }
+
+      .carousel-item {
+        position: absolute;
+        aspect-ratio: 0.6 / 1;
+        will-change: transform, filter, opacity;
+        transition:
+          transform 650ms cubic-bezier(0.4, 0, 0.2, 1),
+          filter 650ms cubic-bezier(0.4, 0, 0.2, 1),
+          opacity 650ms cubic-bezier(0.4, 0, 0.2, 1),
+          left 650ms cubic-bezier(0.4, 0, 0.2, 1),
+          bottom 650ms cubic-bezier(0.4, 0, 0.2, 1),
+          height 650ms cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .carousel-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: bottom center;
+        -webkit-user-drag: none;
+        user-select: none;
+      }
+
+      .bottom-left {
+        position: absolute;
+        bottom: 1.5rem;
+        left: 1rem;
+        z-index: 60;
+        max-width: 320px;
+      }
+
+      @media (min-width: 640px) {
+        .bottom-left {
+          bottom: 5rem;
+          left: 6rem;
+        }
+      }
+
+      .bottom-right {
+        position: absolute;
+        bottom: 1.5rem;
+        right: 1rem;
+        z-index: 60;
+      }
+
+      @media (min-width: 640px) {
+        .bottom-right {
+          bottom: 5rem;
+          right: 2.5rem;
+        }
+      }
+
+      .discover-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: 'Anton', sans-serif;
+        font-size: clamp(20px, 4vw, 56px);
+        font-weight: 400;
+        color: white;
+        opacity: 0.95;
+        text-transform: uppercase;
+        letter-spacing: -0.02em;
+        line-height: 1;
+        text-decoration: none;
+        transition: opacity 200ms ease;
+      }
+
+      .discover-link:hover {
+        opacity: 1;
+      }
+
+      .nav-btn {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 9999px;
+        border: 2px solid white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background-color: transparent;
+        color: white;
+        cursor: pointer;
+        transition: transform 150ms ease, background-color 150ms ease;
+      }
+
+      @media (min-width: 640px) {
+        .nav-btn {
+          width: 4rem;
+          height: 4rem;
+        }
+      }
+
+      .nav-btn:hover {
+        transform: scale(1.08);
+        background-color: rgba(255, 255, 255, 0.12);
+      }
+
+      .nav-btn:disabled {
+        opacity: 0.4;
+        cursor: default;
+        transform: none;
+        background-color: transparent;
+      }
+
+      .nav-btn svg {
+        width: 26px;
+        height: 26px;
+        stroke-width: 2.25;
+      }
+
+      .nav-text-title {
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.95);
+      }
+
+      @media (min-width: 640px) {
+        .nav-text-title {
+          font-size: 22px;
+          margin-bottom: 0.75rem;
+        }
+      }
+
+      .nav-text-body {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.85);
+        line-height: 1.6;
+        margin-bottom: 1rem;
+      }
+
+      @media (min-width: 640px) {
+        .nav-text-body {
+          font-size: 0.875rem;
+          margin-bottom: 1.25rem;
+        }
+      }
+
+      .nav-text-body-mobile-hidden {
+        display: none;
+      }
+
+      @media (min-width: 640px) {
+        .nav-text-body-mobile-hidden {
+          display: block;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app" class="toonhub-root">
+      <!-- Grain overlay -->
+      <div class="grain-overlay"></div>
+
+      <!-- Ghost text -->
+      <div class="ghost-text">3D SHAPE</div>
+
+      <!-- Brand label -->
+      <div class="brand-label">TOONHUB</div>
+
+      <!-- Carousel -->
+      <div class="carousel-root" id="carousel-root"></div>
+
+      <!-- Bottom-left text + nav -->
+      <div class="bottom-left">
+        <p class="nav-text-title">TOONHUB FIGURINES</p>
+        <p class="nav-text-body nav-text-body-mobile-hidden">
+          The artwork is stunning, shipped fully prepared. The finish is a vision, the 3D craft is
+          flawless. Many thanks! Wishing you the win. Order now.
+        </p>
+        <div class="flex gap-3">
+          <button class="nav-btn" id="btn-prev" aria-label="Previous">
+            <svg id="icon-prev"></svg>
+          </button>
+          <button class="nav-btn" id="btn-next" aria-label="Next">
+            <svg id="icon-next"></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bottom-right link -->
+      <div class="bottom-right">
+        <a href="#" class="discover-link">
+          DISCOVER IT
+          <svg id="icon-discover"></svg>
+        </a>
+      </div>
+    </div>
+
+    <script>
+      // --- Image data from your prompt ---
+      const IMAGES = [
+        {
+          src: 'https://fifth-gentle-45902158.figma.site/_components/v2/4de492f6d9cf8244ad5293233e5c6f52407d42fc/1.02464a56.png',
+          bg: '#F4845F',
+          panel: '#F79B7F',
+        },
+        {
+          src: 'https://fifth-gentle-45902158.figma.site/_components/v2/4de492f6d9cf8244ad5293233e5c6f52407d42fc/2.b977faab.png',
+          bg: '#6BBF7A',
+          panel: '#85CC92',
+        },
+        {
+          src: 'https://fifth-gentle-45902158.figma.site/_components/v2/4de492f6d9cf8244ad5293233e5c6f52407d42fc/3.4df853b4.png',
+          bg: '#E882B4',
+          panel: '#ED9DC4',
+        },
+        {
+          src: 'https://fifth-gentle-45902158.figma.site/_components/v2/4de492f6d9cf8244ad5293233e5c6f52407d42fc/4.4457fbce.png',
+          bg: '#6EB5FF',
+          panel: '#8DC4FF',
+        },
+      ];
+
+      // --- State ---
+      let activeIndex = 0;
+      let isAnimating = false;
+      let isMobile = window.innerWidth < 640;
+
+      const root = document.getElementById('app');
+      const carouselRoot = document.getElementById('carousel-root');
+      const btnPrev = document.getElementById('btn-prev');
+      const btnNext = document.getElementById('btn-next');
+
+      // --- Icons ---
+      lucide.createIcons({
+        icons: {
+          ArrowLeft: lucide.ArrowLeft,
+          ArrowRight: lucide.ArrowRight,
+        },
+        attrs: {
+          'stroke-linecap': 'round',
+          'stroke-linejoin': 'round',
+        },
+      });
+
+      // Attach icons to buttons/link
+      lucide.ArrowLeft({}).toSvg && (document.getElementById('icon-prev').outerHTML = lucide.ArrowLeft({}).toSvg());
+      lucide.ArrowRight({}).toSvg && (document.getElementById('icon-next').outerHTML = lucide.ArrowRight({}).toSvg());
+      lucide.ArrowRight({}).toSvg &&
+        (document.getElementById('icon-discover').outerHTML = lucide.ArrowRight({}).toSvg());
+
+      // --- Preload images ---
+      function preloadImages() {
+        IMAGES.forEach((img) => {
+          const i = new Image();
+          i.src = img.src;
+        });
+      }
+
+      preloadImages();
+
+      // --- Resize listener for isMobile ---
+      window.addEventListener('resize', () => {
+        isMobile = window.innerWidth < 640;
+        renderCarousel();
+      });
+
+      // --- Role helpers ---
+      function getRoles(index) {
+        const center = index;
+        const left = (index + 3) % 4;
+        const right = (index + 1) % 4;
+        const back = (index + 2) % 4;
+        return { center, left, right, back };
+      }
+
+      // --- Navigation ---
+      function navigate(direction) {
+        if (isAnimating) return;
+        isAnimating = true;
+
+        if (direction === 'next') {
+          activeIndex = (activeIndex + 1) % IMAGES.length;
+        } else {
+          activeIndex = (activeIndex + IMAGES.length - 1) % IMAGES.length;
+        }
+
+        renderCarousel();
+
+        setTimeout(() => {
+          isAnimating = false;
+        }, 650);
+      }
+
+      btnPrev.addEventListener('click', () => navigate('prev'));
+      btnNext.addEventListener('click', () => navigate('next'));
+
+      // --- Render carousel ---
+      function renderCarousel() {
+        // Background color
+        root.style.backgroundColor = IMAGES[activeIndex].bg;
+
+        const { center, left, right, back } = getRoles(activeIndex);
+
+        carouselRoot.innerHTML = '';
+
+        IMAGES.forEach((img, idx) => {
+          const role =
+            idx === center ? 'center' : idx === left ? 'left' : idx === right ? 'right' : 'back';
+
+          const item = document.createElement('div');
+          item.className = 'carousel-item';
+
+          const imageEl = document.createElement('img');
+          imageEl.src = img.src;
+          imageEl.draggable = false;
+          item.appendChild(imageEl);
+
+          // Role-based styles
+          if (role === 'center') {
+            item.style.left = '50%';
+            item.style.bottom = isMobile ? '22%' : '0';
+            item.style.height = isMobile ? '60%' : '92%';
+            item.style.transform = `translateX(-50%) scale(${isMobile ? 1.25 : 1.68})`;
+            item.style.filter = 'blur(0px)';
+            item.style.opacity = '1';
+            item.style.zIndex = '20';
+          } else if (role === 'left') {
+            item.style.left = isMobile ? '20%' : '30%';
+            item.style.bottom = isMobile ? '32%' : '12%';
+            item.style.height = isMobile ? '16%' : '28%';
+            item.style.transform = 'translateX(-50%) scale(1)';
+            item.style.filter = 'blur(2px)';
+            item.style.opacity = '0.85';
+            item.style.zIndex = '10';
+          } else if (role === 'right') {
+            item.style.left = isMobile ? '80%' : '70%';
+            item.style.bottom = isMobile ? '32%' : '12%';
+            item.style.height = isMobile ? '16%' : '28%';
+            item.style.transform = 'translateX(-50%) scale(1)';
+            item.style.filter = 'blur(2px)';
+            item.style.opacity = '0.85';
+            item.style.zIndex = '10';
+          } else if (role === 'back') {
+            item.style.left = '50%';
+            item.style.bottom = isMobile ? '32%' : '12%';
+            item.style.height = isMobile ? '13%' : '22%';
+            item.style.transform = 'translateX(-50%) scale(1)';
+            item.style.filter = 'blur(4px)';
+            item.style.opacity = '1';
+            item.style.zIndex = '5';
+          }
+
+          carouselRoot.appendChild(item);
+        });
+      }
+
+      // Initial render
+      renderCarousel();
+    </script>
+  </body>
+</html>
